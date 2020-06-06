@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>html_1</title>
+</head>
+<body>
+	<h1>URL을 app.py로 전송</h1>
+	<fieldset>
+		<legend>텍스트 전송</legend>
+		<form action="/urlSending" method="POST">
+			URL: <input name="url" type="text"><br/>
+			<button type="submit"> Submit </button>
+		</form>
+	</fieldset>
+	<fieldset>
+		<legend>텍스트 파일 전송</legend>
+		<form action="/fileUpload" method="POST" enctype="multipart/form-data">
+			<input name="file" type="file"><br/>
+			<button type="submit"> Submit </button>
+		</form>
+	</fieldset>
+	
+</body>
+</html>

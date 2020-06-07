@@ -13,7 +13,7 @@ def index():
 def upload_file():
     if request.method == 'POST':
         f = request.files['file']
-        f.save('/home/hyelin/uploads/' + secure_filename(f.filename))
+        f.save('./uploads/' + secure_filename(f.filename))
         return 'success'
     return 'file uploading failed'
 

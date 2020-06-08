@@ -2,24 +2,93 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>html_1</title>
+	<title>OSP Project</title>
+	<style>
+		#osp-container {
+			width: 1000px;
+			margin: 0px auto;
+			padding: 20px;
+		}
+		#osp-header {
+			padding: 20px;
+			margin-bottom: 20px;
+			border: 1px solid #bcbcbc;
+			background-color: lightgrey;
+		}
+		#osp-content {
+			width: 750px;
+			padding: 20px;
+			margin-bottom: 20px;
+			float: right;
+			border: 1px solid #bcbcbc;
+		}
+		#osp-sidebar {
+			width: 150px;
+			padding: 20px;
+			margin-bottom: 20px;
+			float: left;
+			background-color: #D4F4FA;
+		}
+		#osp-footer {
+			clear: both;
+			padding: 20px;
+		}
+		legend {
+    		background-color: DimGrey;
+    		color: white;
+    		padding: 3px 6px;
+		}
+		tr:nth-child(2n) {
+			background-color: #ebf1de;
+		}
+		tr:nth-child(2n+1) {
+			background-color: #d9d9d9;
+		}
+	</style>
 </head>
 <body>
-	<h1>URL을 app.py로 전송</h1>
-	<fieldset>
-		<legend>텍스트 전송</legend>
-		<form action="/urlSending" method="POST">
-			URL: <input name="url" type="text"><br/>
-			<button type="submit"> Submit </button>
-		</form>
-	</fieldset>
-	<fieldset>
-		<legend>텍스트 파일 전송</legend>
-		<form action="/fileUpload" method="POST" enctype="multipart/form-data">
-			<input name="file" type="file"><br/>
-			<button type="submit"> Submit </button>
-		</form>
-	</fieldset>
-	
+	<div id="osp-container">
+		<div id="osp-header">
+			<center><h1>Web Data Similarity Analysis</h1></center>
+		</div>
+		<div id="osp-sidebar">
+			<h2>사용법</h2>
+			<p>[단어 분석]: 해당 페이지 최상위 10개 단어 출력
+			<p>[유사도 분석]: 타 페이지들과의 유사도 분석 결과 출력
+		</div>
+		<div id="osp-content">
+			<fieldset>
+				<legend>URL 직접 입력</legend>
+				<form action="/urlSending" method="POST">
+					<input name="url" type="text" size=80>
+					<button type="submit"> Submit </button>
+				</form>
+			</fieldset>
+			<center style="font-size:20px;">OR</center>
+			<fieldset>
+				<legend>URL 파일 업로드</legend>
+				<form action="/fileUpload" method="POST" enctype="multipart/form-data">
+					<input name="file" type="file">
+					<button type="submit"> Submit </button>
+				</form>
+			</fieldset>
+			<hr>
+			<h3>LIST(지금은 예시용)</h3>
+			<table frame=hsides style="width:100%;">
+				<tr>
+					<td>네이버</td>
+					<td><a href="https://www.naver.com/" target="_blank">https://www.naver.com/</a></td>
+				</tr>
+				<tr>
+					<td>다음</td>
+					<td><a href="https://www.daum.net/" target="_blank">https://www.daum.net/</a></td>
+				</tr>
+			</table>
+		</div>
+		<div id="osp-footer">
+			<hr>
+			<small>2020 Open Source Programming Final Project Team 11</small>
+		</div>
+	</div>
 </body>
 </html>

@@ -5,6 +5,7 @@
 import re
 import requests
 import numpy
+import math
 from nltk import word_tokenize
 from bs4 import BeautifulSoup
 
@@ -76,6 +77,56 @@ def calCossimil(v1, v2):
 	cossimil = dotpro / (numpy.linalg.norm(v1) * numpy.linalg.norm(v2))
 	print("cos similarity = ", cossimil)
 
+def compute_idf():
+	Dval = len(sent_list)	#num of url
+	bow = set()				#build set of words
+
+	for i in range(0, len(sent_list)):
+		for tok in sent_list[i]:
+			bow.add(tok)
+
+	idf_d = {}
+	for t in bow:
+		cnt = 0
+		for s in sent_list:
+			if t in s:
+				cnt += 1
+			if cnt == 0:
+				idf_d[t] = 0
+			else:
+				idf_d[t] = float(math.log(Dval / cnt))
+
+	return idf_d
+
+def compute_tf(senlist):
+	bow = set()
+	wordcount_d = {}
+
+	for tok in senlist:
+		if tok not in wordcount_d.keys():
+			wordcount_d[tok] = 0
+		wordcount_d[tok] += 1
+		bow.add(tok)
+	
+	tf_d = {}
+	for word, count in wordcount_d.items():
+		tf_d[word] = float( count / len(bow))
+	
+	return tf_d
+
+def cal_tf_idf():
+	idf_d = compute_idf()
+
+	for i in range(0, len(sent_list)):
+		tf_d = compute_tf(sent_list[i])
+		for word, tfval in tf_d.items():
+			tf_idf = tfval * idf_d[word]
+			print(word, tf_idf)
+		print(" ")
+
+
+
+
 if __name__ == '__main__':
 	
 	url1 = u'http://groovy.apache.org/' 
@@ -84,11 +135,11 @@ if __name__ == '__main__':
 	crawling(url1)
 	crawling(url2)
 
-	calCossimil(0, 1);
+	calCossimil(0, 1)
 
+	cal_tf_idf()
 
-
-
+	
 
 
 

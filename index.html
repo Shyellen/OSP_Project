@@ -63,7 +63,7 @@
 			<div>
 				<fieldset>
 				<legend>URL 직접 입력</legend>
-					<input name="url" type="text" size=100% id="inUrl">
+					<input name="url" type="text" size=50% id="inUrl">
 					<button type="button" id="append_row">Submit</button>
 				</fieldset>
 			</div>
@@ -121,8 +121,21 @@
 					var btn = $(this);
 					var tr = btn.parent().parent();
 					var td = tr.children();
-					var url = td.eq(0).text();
-					alert(url);
+					var Lurl = td.eq(0).text();
+
+					var form = document.createElement('form');
+					form.setAttribute('charset', 'UTF-8');
+					form.setAttribute('method', 'post');
+					form.setAttribute('action', '/urlSending');
+					
+					var hiddenField = document.createElement('input');
+					hiddenField.setAttribute('type', 'hidden');
+					hiddenField.setAttribute('name', 'url');
+					hiddenField.setAttribute('value', Lurl);
+					form.appendChild(hiddenField);
+					
+					document.body.appendChild(form);
+					form.submit();
 				});
 				
 				$('#list_table').on("click", ".similarity-analysis", function () {

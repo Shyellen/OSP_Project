@@ -12,9 +12,8 @@ def index():
 @app.route('/fileUpload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        f = request.files['file']
-        f.save('./uploads/' + secure_filename(f.filename))
-        return 'success'
+        ftext = request.form['content']
+        return(ftext)
     return 'file uploading failed'
 
 @app.route('/urlSending', methods=['GET', 'POST'])

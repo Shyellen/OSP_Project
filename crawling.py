@@ -6,6 +6,7 @@ import re
 import requests
 import numpy
 import math
+import time
 from nltk import word_tokenize
 from bs4 import BeautifulSoup
 
@@ -38,7 +39,8 @@ def process_new_sentence(sentences):
 	for sen in sentences:
 		filteredSen = hfilter(sen)
 		for word in word_tokenize(filteredSen):
-			tokenized.append(word)
+			if(word.isalpha()):
+				tokenized.append(word)
 
 	#save sentence list of URL
 	sent_list.append(tokenized)
@@ -67,15 +69,35 @@ def make_vector(i):
 	return v
 
 # calculate Cosine Similarity
-def calCossimil(v1, v2):
+def cal_Cossimil(words1, words2):
 	# make vector
-	v1 = make_vector(0)
-	v2 = make_vector(1)
+	v1 = make_vector(words1)
+	v2 = make_vector(words2)
 
 	#calculate Cosine Similarity
 	dotpro = numpy.dot(v1, v2)
 	cossimil = dotpro / (numpy.linalg.norm(v1) * numpy.linalg.norm(v2))
-	print("cos similarity = ", cossimil)
+
+	return cossimil
+
+#get similarity top3 of url
+def similarity_url(index):
+	sim = {}
+
+	for i in range(0, len(sent_list)):
+		if(i != index):
+			sim[i] = cal_Cossimil(index, i)
+
+	sorted_sim = sorted(sim.items(), key=lambda x:x[1], reverse=True)
+	sorted_sim = sorted_sim[:3]
+
+	sim = dict(sorted_sim)
+	
+	return sim
+
+	
+
+
 
 def compute_idf():
 	Dval = len(sent_list)	#num of url
@@ -114,30 +136,59 @@ def compute_tf(senlist):
 	
 	return tf_d
 
-def cal_tf_idf():
+def cal_tf_idf(senlist):
+	tf_idf = {}
+
 	idf_d = compute_idf()
 
-	for i in range(0, len(sent_list)):
-		tf_d = compute_tf(sent_list[i])
-		for word, tfval in tf_d.items():
-			tf_idf = tfval * idf_d[word]
-			print(word, tf_idf)
-		print(" ")
+	tf_d = compute_tf(senlist)
+	for word, tfval in tf_d.items():
+		tf_idf[word] = tfval * idf_d[word]
+		#print(word, tf_idf)
+	#print("")
+
+	#select Top10
+	sorted_tfidf = sorted(tf_idf.items(), key=lambda x:x[1], reverse=True)
+	sorted_tfidf = sorted_tfidf[:10]
+	tf_idf = dict(sorted_tfidf)
+	
+	return tf_idf
 
 
 
 
 if __name__ == '__main__':
 	
-	url1 = u'http://groovy.apache.org/' 
-	url2 = u'http://skywalking.apache.org/'
+	urls = [u'http://groovy.apache.org/' , u'http://skywalking.apache.org/', 
+			u'http://allura.apache.org/' , u'http://knox.apache.org/', 
+			u'http://whimsical.apache.org/']
 
-	crawling(url1)
-	crawling(url2)
+	i=0
+	for url in urls:
+		start = time.time()
+		crawling(url)
+		cTime = round(time.time() - start, 5)
+		print(url)
+		print("크롤링 시간	:" , cTime, "	단어 수 : ", len(sent_list[i]))
+		i += 1
 
-	calCossimil(0, 1)
+	print("=============================================")
 
-	cal_tf_idf()
+
+	for i in range(0, len(sent_list)):
+		print( i, "번 url과 유사한 top3")
+		sim = similarity_url(i)		#url인덱스:유사도 정렬된 top3 딕셔너리
+		for key in sim:
+			print(urls[key])
+		print("-------------------------------------------")	
+			
+	
+	print("============================================")
+	for i in range(0, len(sent_list)):
+		print( i , "번째 url의 top10 단어")
+		word = cal_tf_idf(sent_list[i])		#단어:tfidf값 정렬된 top10 딕셔너리
+		for key in word:
+			print(key)
 
 	
 

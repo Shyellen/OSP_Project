@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>OSP Project</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="./static/table_handling.js"></script>
+	<link rel="stylesheet" type="text/css" href="./static/layout.css" />
+	<script type="text/javascript">
+		function fileread(){
+			var file = document.getElementById("file").files[0];
+			var reader = new FileReader();
+			reader.readAsText(file, "UTF-8");
+			reader.onload=function(){
+				var view=document.getElementById("content");
+				view.value = reader.result;
+				var sbtn=document.getElementById("btn");
+				sbtn.disabled = false;
+				alert(view.value);
+			};
+		};
+	</script>
+</head>
+<body>
+	<!-- 전체 페이지 -->
+	<div id="osp-container">
+		<!-- 헤더 -->
+		<div id="osp-header">
+			<center><h1>Web Data Similarity Analysis</h1></center>
+		</div>
+		<!-- 좌측 -->
+		<div id="osp-sidebar">
+			<h2>설명</h2>
+			<p>[단어 분석]: 최상위 10개 단어 출력
+			<p>[유사도 분석]: 타 페이지들과의 유사도 분석 결과 출력
+		</div>
+		<!-- 중앙 -->
+		<div id="osp-content">
+			<h2>INSERT URL</h2>
+			<div>
+				<fieldset>
+				<legend>URL 직접 입력</legend>
+					<form action="/urlSending" method="POST">
+						<input name="url" type="text" size=50% id="inUrl" class="urlTxt" placeholder="www.naver.com">
+						<button type="submit" id="append_row">Submit</button>
+					</form>
+				</fieldset>
+			</div>
+			<center style="font-size:20px;">OR</center>
+			<div>
+				<fieldset>
+				<legend>URL 파일 업로드</legend>
+					<input id="file" type="file">
+					<button onclick="fileread()">내용 확인</button>
+					<form action="/fileUpload" method="POST">
+						<input type="hidden" id="content" name="content"/>
+						<button type="submit" id="btn" disabled="disabled"> Submit </button>
+					</form>
+				</fieldset>
+			</div>
+		</div>
+		<!-- 아래 -->
+		<div id="osp-footer">
+			<hr>
+			<small>2020 Open Source Programming Final Project Team 11</small>
+		</div>
+	</div>
+</body>
+</html>

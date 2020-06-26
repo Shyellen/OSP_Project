@@ -1,24 +1,26 @@
 from flask import Flask
 from flask import render_template
 from flask import request
-from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/fileUpload', methods=['GET', 'POST'])
-def upload_file():
-    if request.method == 'POST':
-        ftext = request.form['content']
-        return(ftext)
-    return 'file uploading failed'
 
 @app.route('/urlSending', methods=['GET', 'POST'])
 def text_recv():
     if request.method == 'POST':
-        inTXT = request.form['url']
-        return(inTXT)
-    return("url receiving failed")
+        url_text = request.form['url']
+        return url_text
+    return "url receiving failed"
+
+
+@app.route('/fileUpload', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        url_file = request.form['content']
+        return url_file
+    return "file uploading failed"

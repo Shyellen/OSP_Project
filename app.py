@@ -61,8 +61,8 @@ def text_recv():
     if request.method == 'POST':
         url_text = request.form['url']
         total_result.append(start_crawl(url_text))
-        return str(total_result)
-        # return render_template('/result.html', result=total_result)
+        # return str(total_result)
+        return render_template('result.html', result=total_result)
     return "[ERROR] Url receiving failed."
 
 
@@ -73,6 +73,6 @@ def upload_file():
         urls = url_file.split()
         for url in urls:
             total_result.append(start_crawl(url))
-        return str(total_result)
-        # return render_template('/result.html', result=total_result)
+        # return str(total_result)
+        return render_template('result.html', result=total_result)
     return "[ERROR] File uploading failed."

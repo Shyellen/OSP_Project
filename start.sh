@@ -1,17 +1,12 @@
 #!/bin/bash
 
-if [ -d ./dir ] ;then
-	rm -rf dir
-fi
-mkdir -p dir/templates
-mkdir dir/uploads
+pip install numpy
+pip install nltk
 
-cp app.py dir
-cp cal.py dir
-cp index.html dir/templates
+cd /elasticsearch-7.6.2
+./bin/elasticsearch -d
+cd
 
-cd dir
-chmod 755 app.py
-chmod 755 cal.py
+cd OSP_Project-master
 
 flask run

@@ -1,23 +1,104 @@
-from flask import Flask, render_template, request
+from flask import Flask
+from flask import render_template
+from flask import request
 import requests
 import time
-import operator
+import re
+import numpy
+import math
+from nltk import word_tokenize
 from bs4 import BeautifulSoup
-from elasticsearch import Elasticsearch
-import urllib.request
-
-es_host = "127.0.0.1"
-es_port = "9200"
-es = Elasticsearch([{'host':es_host, 'port':es_port}], timeout=30)
-es_id = 0
 
 app = Flask(__name__)
-total_result = []
-error_message = "<h1>[ERROR]</h1><h2>Input data is invalid.</h2>" \
-                "1. Input may have been added as a duplicate.<br>" \
-                "2. Input may not be url.<br>" \
-                "3. Input may not be valid."
+total_result = []	# html로 리턴할 결과
+sent_list = []		# url 별로 생성된 단어들 묶어놓음.
+word_d = {}			# 모든 url에서 나온 단어들(단어,개수 딕셔너리)
 
+def cal_tf_idf(senlist):
+    tf_idf = {}
+
+    idf_d = compute_idf()
+    tf_d = compute_tf(senlist)
+    for word, tfval in tf_d.items():
+        tf_idf[word] = tfval * idf_d[word]
+
+    #select Top10
+    sorted_tfidf = sorted(tf_idf.items(), key=lambda x:x[1], reverse=True)
+    sorted_tfidf = sorted_tfidf[:10]
+    tf_idf = dict(sorted_tfidf)
+
+    return tf_idf
+
+def compute_idf():
+    Dval = len(sent_list)   #num of url
+    bow = set()             #build set of words
+
+    for i in range(0, len(sent_list)):
+        for tok in sent_list[i]:
+            bow.add(tok)
+
+    idf_d = {}
+    for t in bow:
+        cnt = 0
+        for s in sent_list:
+            if t in s:
+                cnt += 1
+            if cnt == 0:
+                idf_d[t] = 0
+            else:
+                idf_d[t] = float(math.log(Dval / cnt))
+
+    return idf_d
+
+def compute_tf(senlist):
+    bow = set()
+    wordcount_d = {}
+
+    for tok in senlist:
+        if tok not in wordcount_d.keys():
+            wordcount_d[tok] = 0
+        wordcount_d[tok] += 1
+        bow.add(tok)
+
+    tf_d = {}
+    for word, count in wordcount_d.items():
+        tf_d[word] = float( count / len(bow))
+
+    return tf_d
+
+def similarity_url(url_index):
+    sim = {}
+    for i in range(0, len(sent_list)):
+        if(i != url_index):
+            sim[i] = cal_Cossimil(url_index, i)
+
+    sorted_sim = sorted(sim.items(), key=lambda x:x[1], reverse=True)
+    sorted_sim = sorted_sim[:3]
+    sim = dict(sorted_sim)
+
+    return sim
+
+#return vector for cosine similarity
+def make_vector(i):
+    v = []
+    s = sent_list[i]
+    for w in word_d.keys():
+        val = 0
+        for t in s:
+           if t==w:
+                val += 1
+        v.append(val)
+    return v
+
+# calculate Cosine Similarity
+def cal_Cossimil(words1, words2):
+    v1 = make_vector(words1)
+    v2 = make_vector(words2)
+
+    dotpro = numpy.dot(v1, v2)
+    cossimil = dotpro / (numpy.linalg.norm(v1) * numpy.linalg.norm(v2))
+
+    return cossimil
 
 def crawling(url):
     res = requests.get(url)
@@ -40,61 +121,28 @@ def crawling(url):
     word += ' '
     words = word.split()
 
-    d = dict()
-    size = 0
+    l = []
     for w in words:
-        if w in d:
-            d[w] = d[w] + 1
+        if w in word_d.keys():
+            word_d[w] = word_d[w] + 1
         else:
-            d[w] = 1
-    return d, len(words)
+            word_d[w] = 1
+            l.append(w)
+    sent_list.append(l)
+
+    return len(words)
 
 
 def start_crawl(url):
     start = time.time()
-    d, size = crawling(url)
+    size = crawling(url)
     c_time = round(time.time() - start, 5)
-    print("==============================")
     print("크롤링 한 주소:", url)
-    print("단어 수:", size)
     print("크롤링 시간:", c_time)
-    print("==============================")
-    result = [url, size, c_time]
-    es_data_add(d, result)
+    print("단어 수:", size)
+    print("==================================")
+    result = [url, c_time, size]
     return result
-
-
-def es_data_add(word_dict, result):
-    global es_id
-    word_dict = dict(sorted(word_dict.items(), key=operator.itemgetter(1), reverse=True))
-    data = {
-        "url": result[0],
-        "size": result[1],
-        "crawl_time": result[2],
-        "words": list(word_dict.keys()),
-        "frequencies": list(word_dict.values())
-    }
-    es_id += 1
-    es.index(index='web', doc_type='word', id=es_id, body=data)
-    # result = es.search(index='web')
-    # print("=========== result ===========")
-    # print(result)
-
-
-def url_validation(url):
-    for data in total_result:
-        if data[0] == url:
-            print("[ERROR] This is a duplicate URL: %s" % url)
-            return -1
-    try:
-        res = urllib.request.urlopen(url)
-    except ValueError as err:
-        print("[ERROR] This is not an URL: %s" % url)
-        return -2
-    if res.status != 200:
-        print("[ERROR] This is an invalid URL: %s" % url)
-        return -3
-    return 0
 
 
 @app.route('/')
@@ -106,10 +154,10 @@ def index():
 def text_recv():
     if request.method == 'POST':
         url_text = request.form['url']
-        if url_validation(url_text) == 0:
-            total_result.append(start_crawl(url_text))
-            return render_template('result.html', result=total_result)
-    return error_message
+        total_result.append(start_crawl(url_text))
+        # return str(total_result)
+        return render_template('result.html', result=total_result)
+    return "[ERROR] Url receiving failed."
 
 
 @app.route('/fileUpload', methods=['GET', 'POST'])
@@ -118,7 +166,29 @@ def upload_file():
         url_file = request.form['content']
         urls = url_file.split()
         for url in urls:
-            if url_validation(url) == 0:
-                total_result.append(start_crawl(url))
-        return render_template('result.html', result=total_result)
-    return error_message
+            total_result.append(start_crawl(url))
+        print(total_result)
+        print("===========================================")
+		
+        l1=[]
+        l2=[]
+        total_result2=[]
+        for i in range(0, len(sent_list)):
+            sim = similarity_url(i)
+            for key in sim:
+                l1.append(urls[key])
+       
+            word = cal_tf_idf(sent_list[i])
+            for key in word:
+                l2.append(key)
+
+            total_result2.append([l1, l2])
+            l1 = []
+            l2 = [] 
+
+        print(total_result2)
+           
+
+        # return str(total_result)
+        return render_template('result.html', result=total_result, total_result2)
+    return "[ERROR] File uploading failed."

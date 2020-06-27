@@ -24,6 +24,7 @@ url_error_message = "<h1>[ERROR]</h1><h2>Input data is invalid.</h2>" \
                 "2. Input may not be url.<br>" \
                 "3. Input may not be valid."
 
+cnt = -1
 
 def crawling(url):
     res = requests.get(url)
@@ -58,6 +59,7 @@ def crawling(url):
 
 
 def start_crawl(url):
+    global cnt
     start = time.time()
     w_list, size = crawling(url)
     c_time = round(time.time() - start, 5)
@@ -66,7 +68,8 @@ def start_crawl(url):
     print("단어 수:", size)
     print("크롤링 시간:", c_time)
     print("==============================")
-    result = [url, size, c_time]
+    cnt += 1
+    result = [url, size, c_time, cnt]
     es_data_add(w_list, result)
     return result
 
@@ -218,11 +221,12 @@ def upload_file():
 @app.route('/get_similarity', methods=['GET', 'POST'])
 def sim_cal():
     if request.method == 'POST':
-        target = request.form['url_i']
+        target = int(request.form['url_j'])
         sim_list = []
         sim = similarity_url(target)
         for key in sim:
             sim_list.append(total_result[key][0])
+        print(sim_list)
         return render_template('result.html', sim_result=sim_list)
     return "Similarity Error"
 
@@ -230,10 +234,11 @@ def sim_cal():
 @app.route('/get_tfidf', methods=['GET', 'POST'])
 def tfidf_cal():
     if request.method == 'POST':
-        target = request.form['url_i']
+        target = int(request.form['url_i'])
         tfidf_list = []
         word = cal_tf_idf(word_list[target])
         for key in word:
             tfidf_list.append(key)
+        print(tfidf_list)
         return render_template('result.html', tfidf_result=tfidf_list)
     return "tfidf Error"

@@ -4,6 +4,7 @@ import time
 import operator
 from bs4 import BeautifulSoup
 from elasticsearch import Elasticsearch
+import urllib.request
 
 es_host = "127.0.0.1"
 es_port = "9200"
@@ -12,6 +13,10 @@ es_id = 0
 
 app = Flask(__name__)
 total_result = []
+error_message = "<h1>[ERROR]</h1><h2>Input data is invalid.</h2>" \
+                "1. Input may have been added as a duplicate.<br>" \
+                "2. Input may not be url.<br>" \
+                "3. Input may not be valid."
 
 
 def crawling(url):
@@ -76,11 +81,20 @@ def es_data_add(word_dict, result):
     # print(result)
 
 
-def redundancy_check(url):
+def url_validation(url):
     for data in total_result:
         if data[0] == url:
-            return False
-    return True
+            print("[ERROR] This is a duplicate URL: %s" % url)
+            return -1
+    try:
+        res = urllib.request.urlopen(url)
+    except ValueError as err:
+        print("[ERROR] This is not an URL: %s" % url)
+        return -2
+    if res.status != 200:
+        print("[ERROR] This is an invalid URL: %s" % url)
+        return -3
+    return 0
 
 
 @app.route('/')
@@ -92,10 +106,10 @@ def index():
 def text_recv():
     if request.method == 'POST':
         url_text = request.form['url']
-        if redundancy_check(url_text):
+        if url_validation(url_text) == 0:
             total_result.append(start_crawl(url_text))
             return render_template('result.html', result=total_result)
-    return "<h1>[ERROR]</h1> This is a duplicate URL: %s" % url_text
+    return error_message
 
 
 @app.route('/fileUpload', methods=['GET', 'POST'])
@@ -104,7 +118,7 @@ def upload_file():
         url_file = request.form['content']
         urls = url_file.split()
         for url in urls:
-            if redundancy_check(url):
+            if url_validation(url) == 0:
                 total_result.append(start_crawl(url))
         return render_template('result.html', result=total_result)
-    return "[ERROR] Duplicate URL exists. Outputs results except this."
+    return error_message

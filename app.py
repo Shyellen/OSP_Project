@@ -26,6 +26,7 @@ url_error_message = "<h1>[ERROR]</h1><h2>Input data is invalid.</h2>" \
 
 cnt = -1
 
+
 def crawling(url):
     res = requests.get(url)
     html = BeautifulSoup(res.content, "html.parser")
@@ -46,15 +47,15 @@ def crawling(url):
             word += ' '
     word += ' '
     words = word.split()
+    word_list.append(words)
 
     w_list = []
     for w in words:
-        if w not in word_dict.keys():
-            word_dict[w] = 0
+        if w in word_dict:
+            word_dict[w] = word_dict[w] + 1
+        else:
+            word_dict[w] = 1
             w_list.append(w)
-        word_dict[w] += 1
-
-    word_list.append(w_list)
 
     return w_list, len(words)
 
@@ -64,12 +65,13 @@ def start_crawl(url):
     start = time.time()
     w_list, size = crawling(url)
     c_time = round(time.time() - start, 5)
+    cnt += 1
     print("==============================")
     print("크롤링 한 주소:", url)
     print("단어 수:", size)
     print("크롤링 시간:", c_time)
-    print("==============================")
-    cnt += 1
+    print("데이터 인덱스:", cnt)
+
     result = [url, size, c_time, cnt]
     es_data_add(w_list, result)
     return result
@@ -103,6 +105,19 @@ def url_validation(url):
     return 0
 
 
+def similarity_url(url_index):
+    sim = {}
+    for i in range(0, len(word_list)):
+        if i != url_index:
+            sim[i] = cal_Cossimil(url_index, i)
+
+    sorted_sim = sorted(sim.items(), key=lambda x:x[1], reverse=True)
+    sorted_sim = sorted_sim[:3]
+    sim = dict(sorted_sim)
+
+    return sim
+
+
 def cal_tf_idf(w_list):
     tf_idf = {}
 
@@ -125,14 +140,14 @@ def compute_idf():
     for i in range(0, len(word_list)):
         for tok in word_list[i]:
             bow.add(tok)
-    
+
     idf_d = {}
     for t in bow:
-        cnt = 0
+        count = 0
         for s in word_list:
             if t in s:
-                cnt += 1
-        idf_d[t] = float(math.log(Dval / cnt))
+                count += 1
+        idf_d[t] = float(math.log(Dval/count))
 
     return idf_d
 
@@ -152,19 +167,6 @@ def compute_tf(w_list):
         tf_d[word] = float( count / len(bow))
 
     return tf_d
-
-def similarity_url(url_index):
-    sim = {}
-    for i in range(0, len(word_list)):
-        if i != url_index:
-            sim[i] = cal_Cossimil(url_index, i)
-
-    sorted_sim = sorted(sim.items(), key=lambda x:x[1], reverse=True)
-    sorted_sim = sorted_sim[:3]
-    sim = dict(sorted_sim)
-    print(sim)
-
-    return sim
 
 
 def cal_Cossimil(words1, words2):
@@ -221,13 +223,12 @@ def sim_cal():
     if request.method == 'POST':
         target = int(request.form['url_j'])
         sim_list = []
-        sim_st = ""
         sim = similarity_url(target)
         for key in sim:
             sim_list.append(total_result[key][0])
+        print("==========", total_result[target][0], "유사도 분석 결과 ==========")
         print(sim_list)
-        sim_st = "  ".join(sim_list)
-        return render_template('result.html', sim_result=sim_st)
+        return render_template('result.html', sim_result=sim_list)
     return "Similarity Error"
 
 
@@ -236,11 +237,10 @@ def tfidf_cal():
     if request.method == 'POST':
         target = int(request.form['url_i'])
         tfidf_list = []
-        tfidf_st = ""
         word = cal_tf_idf(word_list[target])
         for key in word:
             tfidf_list.append(key)
+        print("==========", total_result[target][0], "단어 분석 결과 ==========")
         print(tfidf_list)
-        tfidf_st = "  ".join(tfidf_list)
-        return render_template('result.html', tfidf_result=tfidf_st)
+        return render_template('result.html', tfidf_result=tfidf_list)
     return "tfidf Error"

@@ -6,16 +6,6 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<script src="./static/table_handling.js"></script>
 	<link rel="stylesheet" type="text/css" href="./static/layout.css" />
-	<script type="text/javascript">
-		function alert_tfidf_res(){
-			var res = document.getElementById("tfidf_res");
-			alert("[ 최상위 단어 TOP10 ]\n"+res.value);
-		};
-		function sim_res(){
-			var res = document.getElementById("sim_res");
-			alert("[ 가장 유사한 페이지 TOP3 ]\n"+res.value);
-		};
-	</script>
 </head>
 <body>
 	<div id="osp-container">
@@ -26,7 +16,6 @@
 			<h2>설명</h2>
 			<p>[단어 분석]: 최상위 10개 단어 출력
 			<p>[유사도 분석]: 타 페이지들과의 유사도 분석 결과 출력
-			<p>[결과]: 반드시 분석 후! 라인에 맞게 눌러주세요.
 		</div>
 		<div id="osp-content">
 			<h2>RESULT TABLE</h2>
@@ -53,21 +42,18 @@
 					<td>{{item[2]}}</td>
 					<td><form action="/get_tfidf" method="POST">
 						<input type="hidden" name="url_i" value="{{item[3]}}"/>
-						<button type="submit" id="btn1">분석</button></form>
-						<button onclick="alert_tfidf_res()">결과</button>
-					</td>
+						<button type="submit" id="btn">분석결과</button>
+					</form></td>
 					<td><form action="/get_similarity" method="POST">
-						<input type="hidden" name="url_j" value="{{item[3]}}"/>
-						<button type="submit" id="btn2">분석</button></form>
-						<button onclick="sim_res()">결과</button>
-					</td>
+						<input type="hidden" name="url_j" value="{{item[3]}}">
+						<button type="submit" id="btn">분석결과</button>
+					</form></td>
 				</tr>
 				{% endfor %}
-			</table>
+				</table>
 			</div>
-			<input type="hidden" name="sim_res" id="sim_res" value="{{sim_result}}"/>
-			<input type="hidden" name="tfidf_res" id="tfidf_res" value="{{tfidf_result}}"/>
 		</div>
+		
 		<div id="osp-footer">
 			<hr>
 			<small>2020 Open Source Programming Final Project Team 11</small>

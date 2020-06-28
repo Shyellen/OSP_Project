@@ -42,22 +42,25 @@
 					<td>{{item[2]}}</td>
 					<td><form action="/get_tfidf" method="POST">
 						<input type="hidden" name="url_i" value="{{item[3]}}"/>
-						<button type="submit" id="btn">분석결과</button>
-					</form></td>
+						<button type="submit" id="btn1"/>분석결과</button></form>
+					</td>
 					<td><form action="/get_similarity" method="POST">
-						<input type="hidden" name="url_j" value="{{item[3]}}">
-						<button type="submit" id="btn">분석결과</button>
+						<input type="hidden" name="url_j" value="{{item[3]}}"/>
+						<button type="submit" id="btn2"/>분석결과</button>
 					</form></td>
 				</tr>
 				{% endfor %}
-				</table>
+			</table>
 			</div>
 		</div>
-		
 		<div id="osp-footer">
 			<hr>
 			<small>2020 Open Source Programming Final Project Team 11</small>
 		</div>
+	</div>
+	<div>	
+		<h1>{{sim_result}}</h1>
+		<h1>{{tfidf_result}}</h1>
 	</div>
 </body>
 </html>

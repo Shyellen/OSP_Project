@@ -228,7 +228,7 @@ def sim_cal():
             sim_list.append(total_result[key][0])
         print("==========", total_result[target][0], "유사도 분석 결과 ==========")
         print(sim_list)
-        return render_template('result.html', sim_result=sim_list)
+        return render_template('analysis_result.html', sim_result=sim_list)
     return "Similarity Error"
 
 
@@ -242,5 +242,5 @@ def tfidf_cal():
             tfidf_list.append(key)
         print("==========", total_result[target][0], "단어 분석 결과 ==========")
         print(tfidf_list)
-        return render_template('result.html', tfidf_result=tfidf_list)
+        return render_template('analysis_result.html', tfidf_result=tfidf_list)
     return "tfidf Error"

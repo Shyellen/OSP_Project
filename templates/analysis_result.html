@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>OSP Project</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="./static/table_handling.js"></script>
+	<link rel="stylesheet" type="text/css" href="./static/layout.css" />
+</head>
+<body>
+	<div id="osp-container">
+		<div id="osp-header">
+			<center><h1>Web Data Similarity Analysis</h1></center>
+		</div>
+		<div id="osp-sidebar">
+			<h2>설명</h2>
+			<p>[단어 분석]: 최상위 10개 단어 출력
+			<p>[유사도 분석]: 타 페이지들과의 유사도 분석 결과 출력
+		</div>
+		<div id="osp-content">
+			<h2>ANALYSIS RESULT</h2>
+			{% for item in sim_result %}
+			<h4>{{item}}</h4>
+			{% endfor %}
+			{% for item in tfidf_result %}
+			<h4>{{item}}</h4>
+			{% endfor %}
+			<input type="button" value="돌아가기" onclick="history.back(-1);">
+			<input type="hidden" name="sim_res" id="sim_res" value="{{sim_result}}"/>
+			<input type="hidden" name="tfidf_res" id="tfidf_res" value="{{tfidf_result}}"/>
+		</div>
+		<div id="osp-footer">
+			<hr>
+			<small>2020 Open Source Programming Final Project Team 11</small>
+		</div>
+	</div>
+</body>
+</html>

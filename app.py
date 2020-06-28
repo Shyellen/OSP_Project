@@ -47,14 +47,16 @@ def crawling(url):
     word += ' '
     words = word.split()
 
-    word_list.append(words)
-
+    w_list = []
     for w in words:
         if w not in word_dict.keys():
             word_dict[w] = 0
+            w_list.append(w)
         word_dict[w] += 1
 
-    return word_list, len(words)
+    word_list.append(w_list)
+
+    return w_list, len(words)
 
 
 def start_crawl(url):

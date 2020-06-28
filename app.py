@@ -40,22 +40,21 @@ def crawling(url):
 
     word = ""
     for c in sentences:
-        if c.isalnum():
+        if c.isalpha():
             word += c
         else:
             word += ' '
     word += ' '
     words = word.split()
 
-    w_list = []
+    word_list.append(words)
+
     for w in words:
-        if w in word_dict:
-            word_dict[w] = word_dict[w] + 1
-        else:
-            word_dict[w] = 1
-            w_list.append(w)
-    word_list.append(w_list)
-    return w_list, len(words)
+        if w not in word_dict.keys():
+            word_dict[w] = 0
+        word_dict[w] += 1
+
+    return word_list, len(words)
 
 
 def start_crawl(url):
@@ -102,19 +101,6 @@ def url_validation(url):
     return 0
 
 
-def similarity_url(url_index):
-    sim = {}
-    for i in range(0, len(word_list)):
-        if i != url_index:
-            sim[i] = cal_Cossimil(url_index, i)
-
-    sorted_sim = sorted(sim.items(), key=lambda x:x[1], reverse=True)
-    sorted_sim = sorted_sim[:3]
-    sim = dict(sorted_sim)
-
-    return sim
-
-
 def cal_tf_idf(w_list):
     tf_idf = {}
 
@@ -137,17 +123,14 @@ def compute_idf():
     for i in range(0, len(word_list)):
         for tok in word_list[i]:
             bow.add(tok)
-
+    
     idf_d = {}
     for t in bow:
         cnt = 0
         for s in word_list:
             if t in s:
                 cnt += 1
-            if cnt == 0:
-                idf_d[t] = 0
-            else:
-                idf_d[t] = float(math.log(Dval / cnt))
+        idf_d[t] = float(math.log(Dval / cnt))
 
     return idf_d
 
@@ -168,13 +151,26 @@ def compute_tf(w_list):
 
     return tf_d
 
+def similarity_url(url_index):
+    sim = {}
+    for i in range(0, len(word_list)):
+        if i != url_index:
+            sim[i] = cal_Cossimil(url_index, i)
+
+    sorted_sim = sorted(sim.items(), key=lambda x:x[1], reverse=True)
+    sorted_sim = sorted_sim[:3]
+    sim = dict(sorted_sim)
+    print(sim)
+
+    return sim
+
 
 def cal_Cossimil(words1, words2):
     v1 = make_vector(words1)
     v2 = make_vector(words2)
 
     dotpro = numpy.dot(v1, v2)
-    cossimil = dotpro / (numpy.linalg.norm(v1) * numpy.linalg.norm(v2))
+    cossimil = float(dotpro / (numpy.linalg.norm(v1) * numpy.linalg.norm(v2)))
 
     return cossimil
 
@@ -223,11 +219,13 @@ def sim_cal():
     if request.method == 'POST':
         target = int(request.form['url_j'])
         sim_list = []
+        sim_st = ""
         sim = similarity_url(target)
         for key in sim:
             sim_list.append(total_result[key][0])
         print(sim_list)
-        return render_template('result.html', sim_result=sim_list)
+        sim_st = "  ".join(sim_list)
+        return render_template('result.html', sim_result=sim_st)
     return "Similarity Error"
 
 
@@ -236,9 +234,11 @@ def tfidf_cal():
     if request.method == 'POST':
         target = int(request.form['url_i'])
         tfidf_list = []
+        tfidf_st = ""
         word = cal_tf_idf(word_list[target])
         for key in word:
             tfidf_list.append(key)
         print(tfidf_list)
-        return render_template('result.html', tfidf_result=tfidf_list)
+        tfidf_st = "  ".join(tfidf_list)
+        return render_template('result.html', tfidf_result=tfidf_st)
     return "tfidf Error"
